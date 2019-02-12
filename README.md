@@ -13,5 +13,5 @@ Else, you can pass a list of URLs and also a logfile location of your choice to 
     python phishfinder.py --input urls.txt --logfile somelogfile.txt
 
 ## Example
-![phishfinder example](https://github.com/m0atz/phishfinder/blob/master/phishfinder.png "phishfinder example")
+![phishfinder example](https://github.com/cybercdh/phishfinder/blob/master/phishfinder.png "phishfinder example")
 
