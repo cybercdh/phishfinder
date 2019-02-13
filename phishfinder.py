@@ -15,6 +15,8 @@
   python phishfinder.py
   python phishfinder.py [--input urls.txt] [--logfile somelogfile.txt]
 
+  released under MIT licence.
+
 '''
 import requests
 import csv
