@@ -26,6 +26,8 @@ import json
 from urlparse import urlparse, urljoin
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
+from colorama import init
+init()
 
 parser = ArgumentParser()
 parser.add_argument("-i", "--input", dest="inputfile", required=False, help="input file of phishing URLs", metavar="FILE")
