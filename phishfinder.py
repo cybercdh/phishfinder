@@ -13,7 +13,7 @@
 
   usage:
   python phishfinder.py
-  python phishfinder.py [--input urls.txt] [--logfile somelogfile.txt]
+  python phishfinder.py [--input urls.txt] [--logfile somelogfile.txt] [--output /phishing/kit/folder]
 
   released under MIT licence.
 
@@ -52,13 +52,8 @@ def mkdir_p(path):
       else: raise
 
 def safe_open_w(path):
-  ''' Open "path" for writing, creating any parent directories as needed.
-  '''
   mkdir_p(os.path.dirname(path))
   return open(path, 'wb')
-
-# with safe_open_w('/Users/bill/output/output-text.txt') as f:
-#     f.write(...)
 
 def go_phishing(phishing_url):
   # parts returns an array including the path. Split the paths into a list to then iterate
@@ -121,10 +116,8 @@ def go_phishing(phishing_url):
               return
 
             if q.ok:
-              # sys.stdout.write('[+]  Saving file to ./%s...' % args.outputDir % "/" % filename)
               sys.stdout.write('[+]  Saving file to {0}{1}{2}...'.format(args.outputDir, "/", filename))
               with safe_open_w(args.outputDir + "/" + filename) as kit:
-              # with open (filename, 'wb') as kit:
                 for chunk in q.iter_content(chunk_size=1024):
                   if chunk:
                     kit.write(chunk)
