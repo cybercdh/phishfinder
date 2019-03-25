@@ -10,7 +10,7 @@ Run the script without any arguments to use the latest URLs from http://data.phi
 
 Else, you can pass a list of URLs and also a logfile location of your choice to record which URLs were related to each kit found.
 
-    python phishfinder.py --input urls.txt --logfile somelogfile.txt
+    python phishfinder.py --input urls.txt --logfile somelogfile.txt --output /phishing/kit/folder
 
 ## Example
 ![phishfinder example](https://github.com/cybercdh/phishfinder/blob/master/phishfinder.png "phishfinder example")
