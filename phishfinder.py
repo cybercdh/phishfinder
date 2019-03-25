@@ -21,7 +21,8 @@
 import requests
 import csv
 import sys
-import os.path
+import os, os.path
+import errno
 import json
 from urlparse import urlparse, urljoin
 from bs4 import BeautifulSoup
@@ -31,6 +32,7 @@ init()
 
 parser = ArgumentParser()
 parser.add_argument("-i", "--input", dest="inputfile", required=False, help="input file of phishing URLs", metavar="FILE")
+parser.add_argument("-o", "--output", dest="outputDir", default=".", required=False, help="location to save phishing kits", metavar="FILE")
 parser.add_argument("-l", "--logfile", dest="logfile", default="phish_log.txt", help="output log file location", metavar="FILE")
 args = parser.parse_args()
 
@@ -39,6 +41,24 @@ class bcolors:
     OKGREEN = '\033[92m'
     WARNING = '\033[93m'
     ENDC = '\033[0m'
+
+# Taken from https://stackoverflow.com/questions/23793987/write-file-to-a-directory-that-doesnt-exist
+def mkdir_p(path):
+  try:
+      os.makedirs(path)
+  except OSError as exc: # Python >2.5
+      if exc.errno == errno.EEXIST and os.path.isdir(path):
+          pass
+      else: raise
+
+def safe_open_w(path):
+  ''' Open "path" for writing, creating any parent directories as needed.
+  '''
+  mkdir_p(os.path.dirname(path))
+  return open(path, 'wb')
+
+# with safe_open_w('/Users/bill/output/output-text.txt') as f:
+#     f.write(...)
 
 def go_phishing(phishing_url):
   # parts returns an array including the path. Split the paths into a list to then iterate
@@ -101,8 +121,10 @@ def go_phishing(phishing_url):
               return
 
             if q.ok:
-              sys.stdout.write('[+]  Saving file to ./%s...' % filename)
-              with open (filename, 'wb') as kit:
+              # sys.stdout.write('[+]  Saving file to ./%s...' % args.outputDir % "/" % filename)
+              sys.stdout.write('[+]  Saving file to {0}{1}{2}...'.format(args.outputDir, "/", filename))
+              with safe_open_w(args.outputDir + "/" + filename) as kit:
+              # with open (filename, 'wb') as kit:
                 for chunk in q.iter_content(chunk_size=1024):
                   if chunk:
                     kit.write(chunk)
