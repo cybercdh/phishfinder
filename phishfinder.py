@@ -33,7 +33,7 @@ init()
 parser = ArgumentParser()
 parser.add_argument("-i", "--input", dest="inputfile", required=False, help="input file of phishing URLs", metavar="FILE")
 parser.add_argument("-o", "--output", dest="outputDir", default=".", required=False, help="location to save phishing kits", metavar="FILE")
-parser.add_argument("-l", "--logfile", dest="logfile", default="phish_log.txt", help="output log file location", metavar="FILE")
+parser.add_argument("-l", "--logfile", dest="logfile", default="phishfinder_log.txt", help="output log file location", metavar="FILE")
 args = parser.parse_args()
 
 # colors used for prettifying up the terminal output
@@ -69,7 +69,7 @@ def go_phishing(phishing_url):
     
     # make the request
     try:
-      r = requests.get(phish_url, allow_redirects=False, timeout=5)
+      r = requests.get(phish_url, allow_redirects=False, timeout=2)
     except requests.exceptions.RequestException:
       print bcolors.WARNING + "[!]  An error occurred connecting to {}".format(phish_url) + bcolors.ENDC
       return 
@@ -96,32 +96,43 @@ def go_phishing(phishing_url):
           if href and href[0] == '?':
             continue
 
-          # if it's a .zip, we're interested
+          # look for zips, txt and exes
           if href.endswith(".zip"):
-
-            # get the full path of the kit
             kit_url = urljoin(phish_url, href)
-            filename = kit_url.split('/')[-1]
             print bcolors.OKGREEN + "[!]  Possible phishing kit found at {}".format(kit_url) + bcolors.ENDC
-            
-            # update the log file
-            f = open (args.logfile, "a")
-            f.write(kit_url + "\n")
+            download_file (kit_url)
 
-            # download the kit, save to the current directory, stream it as opposed to save in memory
-            try:
-              q = requests.get(kit_url, allow_redirects=False, timeout=5, stream=True)
-            except requests.exceptions.RequestException:
-              print bcolors.WARNING + "[!]  An error occurred downloading the phishing kit at {}".format(kit_url) + bcolors.ENDC
-              return
+          if href.endswith(".txt"):
+            txt_url = urljoin(phish_url, href)
+            print bcolors.OKGREEN + "[!]  Possible victim list found at {}".format(txt_url) + bcolors.ENDC
+            download_file (txt_url)
 
-            if q.ok:
-              sys.stdout.write('[+]  Saving file to {0}{1}{2}...'.format(args.outputDir, "/", filename))
-              with safe_open_w(args.outputDir + "/" + filename) as kit:
-                for chunk in q.iter_content(chunk_size=1024):
-                  if chunk:
-                    kit.write(chunk)
-                print bcolors.OKGREEN + "saved." + bcolors.ENDC
+          if href.endswith(".exe"):
+            mal_url = urljoin(phish_url, href)
+            print bcolors.OKGREEN + "[!]  Possible malware found at {}".format(mal_url) + bcolors.ENDC
+            download_file (mal_url)
+
+def download_file(download_url):
+  filename = download_url.split('/')[-1]
+  
+  # update the log file
+  f = open (args.logfile, "a")
+  f.write(download_url + "\n")
+
+  # download the kit, save to the current directory, stream it as opposed to save in memory
+  try:
+    q = requests.get(download_url, allow_redirects=False, timeout=5, stream=True)
+  except requests.exceptions.RequestException:
+    print bcolors.WARNING + "[!]  An error occurred downloading the file at {}".format(download_url) + bcolors.ENDC
+    return
+
+  if q.ok:
+    sys.stdout.write('[+]  Saving file to {0}{1}{2}...'.format(args.outputDir, "/", filename))
+    with safe_open_w(args.outputDir + "/" + filename) as kit:
+      for chunk in q.iter_content(chunk_size=1024):
+        if chunk:
+          kit.write(chunk)
+      print bcolors.OKGREEN + "saved." + bcolors.ENDC
 
 
 def use_phishtank():
