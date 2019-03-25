@@ -16,3 +16,9 @@ Else, you can pass a list of URLs and also a logfile location of your choice to 
 
 ![phishfinder example](/../screenshots/render1551268365598.gif?raw=true "Phishfinder Example")
 
+## TODO
+
+Updates planned include:
+
+* Brute-forcing for files using the directory as the filename
+* Brute-forcing of victim log files from common txt file naming conventions
