@@ -81,7 +81,11 @@ def go_phishing(phishing_url):
 
     # check if directory listing is enabled
     if "Index of" in r.text:
-      print "[!]  Directory found at {}".format(phish_url)
+      print bcolors.WARNING + "[!]  Directory found at {}".format(phish_url) + bcolors.ENDC
+      
+      # log open directories to separate file
+      f = open ("opendirs_" + args.logfile, "a")
+      f.write(phish_url + "\n")
 
       # get all the links in the directory
       soup = BeautifulSoup(r.text, 'html.parser')
