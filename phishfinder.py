@@ -74,7 +74,6 @@ def go_guessing(phish_url):
         return
 
       # hopefully we're working with a .zip now...
-      # g = requests.get(guess_url, allow_redirects=False, timeout=2, stream=True)
       print bcolors.OKGREEN + "[!]  Successful guess! Potential kit found at {}".format(guess_url) + bcolors.ENDC
       download_file(guess_url)
       return 
