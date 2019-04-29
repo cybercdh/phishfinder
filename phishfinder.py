@@ -58,23 +58,26 @@ def safe_open_w(path):
 def go_guessing(phish_url):
   # append .zip to the current path, and see if it works!
   guess_url = phish_url[:-1] + ".zip" 
+
   if guess_url[-5:] != "/.zip":
     print "[+]  Guessing: {}".format(guess_url)
 
     try:
-      g = requests.get(guess_url, allow_redirects=False, timeout=2, stream=True)
+      g = requests.head(guess_url, allow_redirects=False, timeout=2, stream=True)
 
-      is_chunked = g.headers.get('transfer-encoding', '') == 'chunked'
-      content_length_s = g.headers.get('content-length')
-      if not is_chunked and content_length_s.isdigit():
-          content_length = int(content_length_s)
-      else:
-          content_length = None
-
-      if g.status_code == 200 and content_length:
-        print bcolors.OKGREEN + "[!]  Successful guess! Potential kit found at {}".format(guess_url) + bcolors.ENDC
-        download_file(guess_url)
+      # if there's no content-type, ignore
+      if not 'content-type' in g.headers:
         return
+
+      # if the content-type isn't a zip, ignore
+      if not 'zip' in g.headers.get('content-type'):
+        return
+
+      # hopefully we're working with a .zip now...
+      # g = requests.get(guess_url, allow_redirects=False, timeout=2, stream=True)
+      print bcolors.OKGREEN + "[!]  Successful guess! Potential kit found at {}".format(guess_url) + bcolors.ENDC
+      download_file(guess_url)
+      return 
 
     except requests.exceptions.RequestException:
       print "[!]  An error occurred connecting to {}".format(guess_url)
