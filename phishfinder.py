@@ -55,6 +55,31 @@ def safe_open_w(path):
   mkdir_p(os.path.dirname(path))
   return open(path, 'wb')
 
+def go_guessing(phish_url):
+  # append .zip to the current path, and see if it works!
+  guess_url = phish_url[:-1] + ".zip" 
+  if guess_url[-5:] != "/.zip":
+    print "[+]  Guessing: {}".format(guess_url)
+
+    try:
+      g = requests.get(guess_url, allow_redirects=False, timeout=2, stream=True)
+
+      is_chunked = g.headers.get('transfer-encoding', '') == 'chunked'
+      content_length_s = g.headers.get('content-length')
+      if not is_chunked and content_length_s.isdigit():
+          content_length = int(content_length_s)
+      else:
+          content_length = None
+
+      if g.status_code == 200 and content_length:
+        print bcolors.OKGREEN + "[!]  Successful guess! Potential kit found at {}".format(guess_url) + bcolors.ENDC
+        download_file(guess_url)
+        return
+
+    except requests.exceptions.RequestException:
+      print "[!]  An error occurred connecting to {}".format(guess_url)
+      return
+
 def go_phishing(phishing_url):
   # parts returns an array including the path. Split the paths into a list to then iterate
   # e.g. ParseResult(scheme='https', netloc='example.com', path='/hello/world/foo/bar', params='', query='', fragment='')
@@ -67,11 +92,14 @@ def go_phishing(phishing_url):
     # traverse the path
     phish_url = '{}://{}/{}/'.format(parts.scheme, parts.netloc,'/'.join(paths[:len(paths) - i]))
     
-    # make the request
+    # guess each path with .zip extension
+    go_guessing(phish_url)
+
+    # request each path
     try:
       r = requests.get(phish_url, allow_redirects=False, timeout=2)
     except requests.exceptions.RequestException:
-      print bcolors.WARNING + "[!]  An error occurred connecting to {}".format(phish_url) + bcolors.ENDC
+      print "[!]  An error occurred connecting to {}".format(phish_url)
       return 
 
     if not r.ok:
