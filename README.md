@@ -27,3 +27,4 @@ Updates planned include:
 
 * ~~Brute-forcing for files using the directory as the filename~~
 * Brute-forcing of victim log files from common txt file naming conventions
+* Resolve issue where a successful guess downloads a file, followed by an Open Directory download
