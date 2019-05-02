@@ -24,6 +24,7 @@ import sys
 import os, os.path
 import errno
 import json
+from datetime import datetime
 from urlparse import urlparse, urljoin
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
@@ -147,11 +148,15 @@ def go_phishing(phishing_url):
             download_file (mal_url)
 
 def download_file(download_url):
-  filename = download_url.split('/')[-1]
-  
+
+  now = datetime.now() # current date and time for logging
+  date_time = now.strftime("%m%d%Y%H%M%S-")
+
+  filename = date_time + download_url.split('/')[-1]
+
   # update the log file
   f = open (args.logfile, "a")
-  f.write(download_url + "\n")
+  f.write(date_time + download_url + "\n")
 
   # download the kit, save to the current directory, stream it as opposed to save in memory
   try:
@@ -173,8 +178,12 @@ def use_phishtank():
   # it does take a min or so to parse the json
   sys.stdout.write('[+]  Parsing URLs from phishtank, this may take a minute...')
   sys.stdout.flush()
+  phishtank_url = "http://data.phishtank.com/data/online-valid.json"
+  headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36'
+  }
   try:  
-    r = requests.get("http://data.phishtank.com/data/online-valid.json", allow_redirects=True, timeout=5, stream=True)
+    r = requests.get(phishtank_url, allow_redirects=True, timeout=5, stream=True, headers=headers)
   except requests.exceptions.RequestException:
     print bcolors.WARNING + "[!]  An error occurred connecting to phishtank. Please try again." + bcolors.ENDC
     sys.exit()
