@@ -29,6 +29,7 @@ from urlparse import urlparse, urljoin
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
 from colorama import init
+from clint.textui import progress
 init()
 
 parser = ArgumentParser()
@@ -151,7 +152,6 @@ def download_file(download_url):
 
   now = datetime.now() # current date and time for logging
   date_time = now.strftime("%m%d%Y%H%M%S-")
-
   filename = date_time + download_url.split('/')[-1]
 
   # update the log file
@@ -161,18 +161,18 @@ def download_file(download_url):
   # download the kit, save to the current directory, stream it as opposed to save in memory
   try:
     q = requests.get(download_url, allow_redirects=False, timeout=5, stream=True)
-  except requests.exceptions.RequestException:
+    if q.ok:
+      total_length = int(q.headers.get('content-length'))
+      sys.stdout.write('[+]  Saving file to {0}{1}{2}...'.format(args.outputDir, "/", filename))
+      with safe_open_w(args.outputDir + "/" + filename) as kit:
+        for chunk in progress.bar(q.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1): 
+          if chunk:
+            kit.write(chunk)
+            kit.flush()
+        print bcolors.OKGREEN + "saved." + bcolors.ENDC
+  except:
     print bcolors.WARNING + "[!]  An error occurred downloading the file at {}".format(download_url) + bcolors.ENDC
     return
-
-  if q.ok:
-    sys.stdout.write('[+]  Saving file to {0}{1}{2}...'.format(args.outputDir, "/", filename))
-    with safe_open_w(args.outputDir + "/" + filename) as kit:
-      for chunk in q.iter_content(chunk_size=1024):
-        if chunk:
-          kit.write(chunk)
-      print bcolors.OKGREEN + "saved." + bcolors.ENDC
-
 
 def use_phishtank():
   # it does take a min or so to parse the json
