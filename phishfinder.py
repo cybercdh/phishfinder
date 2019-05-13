@@ -13,7 +13,7 @@
 
   usage:
   python phishfinder.py
-  python phishfinder.py [--input urls.txt] [--logfile somelogfile.txt] [--output /phishing/kit/folder]
+  python phishfinder.py [--input urls.txt] [--output /some/folder]
 
   released under MIT licence.
 
@@ -34,9 +34,10 @@ init()
 
 parser = ArgumentParser()
 parser.add_argument("-i", "--input", dest="inputfile", required=False, help="input file of phishing URLs", metavar="FILE")
-parser.add_argument("-o", "--output", dest="outputDir", default=".", required=False, help="location to save phishing kits", metavar="FILE")
-parser.add_argument("-l", "--logfile", dest="logfile", default="phishfinder_log.txt", help="output log file location", metavar="FILE")
+parser.add_argument("-o", "--output", dest="outputDir", default=".", help="location to save phishing kits and logs", metavar="FILE")
 args = parser.parse_args()
+
+LASTURL = "" # stores the lastest phishing kit url
 
 # colors used for prettifying up the terminal output
 class bcolors:
@@ -57,11 +58,15 @@ def safe_open_w(path):
   mkdir_p(os.path.dirname(path))
   return open(path, 'wb')
 
+def safe_open_a(path):
+  mkdir_p(os.path.dirname(path))
+  return open(path, 'a')
+
 def go_guessing(phish_url):
   # append .zip to the current path, and see if it works!
   guess_url = phish_url[:-1] + ".zip" 
 
-  if guess_url[-5:] != "/.zip":
+  if guess_url[-5:] != "/.zip": 
     print "[+]  Guessing: {}".format(guess_url)
 
     try:
@@ -115,9 +120,9 @@ def go_phishing(phishing_url):
     if "Index of" in r.text:
       print bcolors.WARNING + "[!]  Directory found at {}".format(phish_url) + bcolors.ENDC
       
-      # log open directories to separate file
-      f = open ("opendirs_" + args.logfile, "a")
-      f.write(phish_url + "\n")
+      # log open directories
+      with safe_open_a(args.outputDir + "/directories.txt") as f:
+        f.write(phish_url + "\n")
 
       # get all the links in the directory
       soup = BeautifulSoup(r.text, 'html.parser')
@@ -150,21 +155,31 @@ def go_phishing(phishing_url):
 
 def download_file(download_url):
 
-  now = datetime.now() # current date and time for logging
+  # make sure the URL we're downloading hasn't just been guessed
+  global LASTURL
+
+  if (LASTURL == download_url):
+    print bcolors.WARNING + "[!]  Already downloaded {}".format(download_url) + bcolors.ENDC    
+    return
+
+  LASTURL = download_url
+
+  # current date and time for logging
+  now = datetime.now() 
   date_time = now.strftime("%m%d%Y%H%M%S-")
   filename = date_time + download_url.split('/')[-1]
 
   # update the log file
-  f = open (args.logfile, "a")
-  f.write(date_time + download_url + "\n")
+  with safe_open_a(args.outputDir + "/kits.txt") as f:
+    f.write(date_time + download_url + "\n")
 
-  # download the kit, save to the current directory, stream it as opposed to save in memory
+  # download the kit
   try:
     q = requests.get(download_url, allow_redirects=False, timeout=5, stream=True)
     if q.ok:
       total_length = int(q.headers.get('content-length'))
-      sys.stdout.write('[+]  Saving file to {0}{1}{2}...'.format(args.outputDir, "/", filename))
-      with safe_open_w(args.outputDir + "/" + filename) as kit:
+      sys.stdout.write('[+]  Saving file to {0}{1}{2}...'.format(args.outputDir + "/kits", "/", filename))
+      with safe_open_w(args.outputDir + "/kits/" + filename) as kit:
         for chunk in progress.bar(q.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1): 
           if chunk:
             kit.write(chunk)
@@ -189,6 +204,7 @@ def use_phishtank():
     sys.exit()
 
   if not r.ok:
+    print bcolors.WARNING + "[!]  An error occurred connecting to phishtank. Please try again." + bcolors.ENDC
     sys.exit()
 
   parsed_json = r.json()
