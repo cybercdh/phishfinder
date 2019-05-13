@@ -1,7 +1,7 @@
-acefile==0.6.10
+acefile==0.6.12
 args==0.1.0
 beautifulsoup4==4.7.1
-certifi==2018.11.29
+certifi==2019.3.9
 chardet==3.0.4
 Click==7.0
 clint==0.5.1
@@ -26,7 +26,7 @@ simplejson==3.16.0
 six==1.12.0
 soupsieve==1.8
 SQLAlchemy==1.2.18
-tld==0.9.2
-urllib3==1.24.1
+tld==0.9.3
+urllib3==1.25.2
 webencodings==0.5.1
 yarg==0.1.9
