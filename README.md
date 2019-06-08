@@ -9,7 +9,7 @@ Additionally, the tool will also attempt to guess the name of the .zip, as commo
     https://example.com/foo.zip
     
 ## Usage
-Run the script without any arguments to use the latest URLs from http://data.phishtank.com/data/online-valid.json
+Run the script without any arguments to use the latest URLs from http://data.phishtank.com/data/online-valid.json 
     
     python phishfinder.py
 
@@ -20,6 +20,9 @@ Else, you can pass a list of URLs and specify the folder where you'd like to sav
 ## Example
 
 ![phishfinder example](/../screenshots/render1551268365598.gif?raw=true "Phishfinder Example")
+
+## Install
+    $ pip install -r requirements.txt
 
 ## TODO
 
