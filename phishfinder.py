@@ -25,7 +25,7 @@ import os, os.path
 import errno
 import json
 from datetime import datetime
-from urlparse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
 from colorama import init
@@ -67,7 +67,7 @@ def go_guessing(phish_url):
   guess_url = phish_url[:-1] + ".zip" 
 
   if guess_url[-5:] != "/.zip": 
-    print "[+]  Guessing: {}".format(guess_url)
+    print("[+]  Guessing: {}".format(guess_url))
 
     try:
       g = requests.head(guess_url, allow_redirects=False, timeout=2, stream=True)
@@ -81,12 +81,12 @@ def go_guessing(phish_url):
         return
 
       # hopefully we're working with a .zip now...
-      print bcolors.OKGREEN + "[!]  Successful guess! Potential kit found at {}".format(guess_url) + bcolors.ENDC
+      print(bcolors.OKGREEN + "[!]  Successful guess! Potential kit found at {}".format(guess_url) + bcolors.ENDC)
       download_file(guess_url)
       return 
 
     except requests.exceptions.RequestException:
-      print "[!]  An error occurred connecting to {}".format(guess_url)
+      print("[!]  An error occurred connecting to {}".format(guess_url))
       return
 
 def go_phishing(phishing_url):
@@ -99,7 +99,7 @@ def go_phishing(phishing_url):
   for i in range(0, len(paths)):
 
     # traverse the path
-    phish_url = '{}://{}/{}/'.format(parts.scheme, parts.netloc,'/'.join(paths[:len(paths) - i]))
+    phish_url = '{}://{}/{}/'.format(parts.scheme, parts.netloc,'/'.join(paths[:len(paths) - i]).encode('utf-8'))
     
     # guess each path with .zip extension
     go_guessing(phish_url)
@@ -108,17 +108,17 @@ def go_phishing(phishing_url):
     try:
       r = requests.get(phish_url, allow_redirects=False, timeout=2)
     except requests.exceptions.RequestException:
-      print "[!]  An error occurred connecting to {}".format(phish_url)
+      print("[!]  An error occurred connecting to {}".format(phish_url))
       return 
 
     if not r.ok:
       return
     
-    print "[+]  Checking: {}".format(phish_url)
+    print("[+]  Checking: {}".format(phish_url))
 
     # check if directory listing is enabled
     if "Index of" in r.text:
-      print bcolors.WARNING + "[!]  Directory found at {}".format(phish_url) + bcolors.ENDC
+      print(bcolors.WARNING + "[!]  Directory found at {}".format(phish_url) + bcolors.ENDC)
       
       # log open directories
       with safe_open_a(args.outputDir + "/directories.txt") as f:
@@ -140,17 +140,17 @@ def go_phishing(phishing_url):
           # look for zips, txt and exes
           if href.endswith(".zip"):
             kit_url = urljoin(phish_url, href)
-            print bcolors.OKGREEN + "[!]  Possible phishing kit found at {}".format(kit_url) + bcolors.ENDC
+            print(bcolors.OKGREEN + "[!]  Possible phishing kit found at {}".format(kit_url) + bcolors.ENDC)
             download_file (kit_url)
 
           if href.endswith(".txt"):
             txt_url = urljoin(phish_url, href)
-            print bcolors.OKGREEN + "[!]  Possible victim list found at {}".format(txt_url) + bcolors.ENDC
+            print(bcolors.OKGREEN + "[!]  Possible victim list found at {}".format(txt_url) + bcolors.ENDC)
             download_file (txt_url)
 
           if href.endswith(".exe"):
             mal_url = urljoin(phish_url, href)
-            print bcolors.OKGREEN + "[!]  Possible malware found at {}".format(mal_url) + bcolors.ENDC
+            print(bcolors.OKGREEN + "[!]  Possible malware found at {}".format(mal_url) + bcolors.ENDC)
             download_file (mal_url)
 
 def download_file(download_url):
@@ -159,7 +159,7 @@ def download_file(download_url):
   global LASTURL
 
   if (LASTURL == download_url):
-    print bcolors.WARNING + "[!]  Already downloaded {}".format(download_url) + bcolors.ENDC    
+    print(bcolors.WARNING + "[!]  Already downloaded {}".format(download_url) + bcolors.ENDC)    
     return
 
   LASTURL = download_url
@@ -184,9 +184,9 @@ def download_file(download_url):
           if chunk:
             kit.write(chunk)
             kit.flush()
-        print bcolors.OKGREEN + "saved." + bcolors.ENDC
+        print(bcolors.OKGREEN + "saved." + bcolors.ENDC)
   except:
-    print bcolors.WARNING + "[!]  An error occurred downloading the file at {}".format(download_url) + bcolors.ENDC
+    print(bcolors.WARNING + "[!]  An error occurred downloading the file at {}".format(download_url) + bcolors.ENDC)
     return
 
 def use_phishtank():
@@ -200,15 +200,15 @@ def use_phishtank():
   try:  
     r = requests.get(phishtank_url, allow_redirects=True, timeout=5, stream=True, headers=headers)
   except requests.exceptions.RequestException:
-    print bcolors.WARNING + "[!]  An error occurred connecting to phishtank. Please try again." + bcolors.ENDC
+    print(bcolors.WARNING + "[!]  An error occurred connecting to phishtank. Please try again." + bcolors.ENDC)
     sys.exit()
 
   if not r.ok:
-    print bcolors.WARNING + "[!]  An error occurred connecting to phishtank. Please try again." + bcolors.ENDC
+    print(bcolors.WARNING + "[!]  An error occurred connecting to phishtank. Please try again." + bcolors.ENDC)
     sys.exit()
 
   parsed_json = r.json()
-  print bcolors.OKGREEN + "done." + bcolors.ENDC
+  print(bcolors.OKGREEN + "done." + bcolors.ENDC)
 
   # go phishing baby!
   for entry in parsed_json:
@@ -218,11 +218,11 @@ def use_phishtank():
 def use_local_file(f):
   # check the file exists
   if not os.path.isfile(f):
-    print bcolors.WARNING + "[!]  {} is not a valid file. Please retry".format(f) + bcolors.ENDC
+    print(bcolors.WARNING + "[!]  {} is not a valid file. Please retry".format(f) + bcolors.ENDC)
     sys.exit()
 
   # parse the urls and go phishing
-  print bcolors.WARNING + "[+]  Checking URLs from {}".format(f) + bcolors.ENDC
+  print(bcolors.WARNING + "[+]  Checking URLs from {}".format(f) + bcolors.ENDC)
   with open (f) as inputfile:
     urls = inputfile.readlines()
     for url in urls:
