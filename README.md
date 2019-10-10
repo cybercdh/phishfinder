@@ -11,18 +11,18 @@ Additionally, the tool will also attempt to guess the name of the .zip, as commo
 ## Usage
 Run the script without any arguments to use the latest URLs from http://data.phishtank.com/data/online-valid.json 
     
-    python phishfinder.py
+    python3 phishfinder.py
 
 Else, you can pass a list of URLs and specify the folder where you'd like to save results
 
-    python phishfinder.py --input urls.txt --output /phishing/kit/folder
+    python3 phishfinder.py --input urls.txt --output /phishing/kit/folder
 
 ## Example
 
 ![phishfinder example](/../screenshots/render1551268365598.gif?raw=true "Phishfinder Example")
 
 ## Install
-    $ pip install -r requirements.txt
+    $ pip3 install -r requirements.txt
 
 ## TODO
 
@@ -31,4 +31,6 @@ Updates planned include:
 * ~~Brute-forcing for files using the directory as the filename~~
 * Brute-forcing of victim log files from common txt file naming conventions
 * Speed up the requests and use threading
+* Get down with the cool katz and re-write this in Go.
 * ~~Resolve issue where a successful guess downloads a file, followed by an Open Directory download~~
+
