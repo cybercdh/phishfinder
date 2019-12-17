@@ -25,7 +25,7 @@ import os, os.path
 import errno
 import json
 from datetime import datetime
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, unquote
 from bs4 import BeautifulSoup
 from argparse import ArgumentParser
 from colorama import init
@@ -65,7 +65,7 @@ def safe_open_a(path):
 def go_guessing(phish_url):
   # append .zip to the current path, and see if it works!
   guess_url = phish_url[:-1] + ".zip" 
-
+  
   if guess_url[-5:] != "/.zip": 
     print("[+]  Guessing: {}".format(guess_url))
 
@@ -99,7 +99,8 @@ def go_phishing(phishing_url):
   for i in range(0, len(paths)):
 
     # traverse the path
-    phish_url = '{}://{}/{}/'.format(parts.scheme, parts.netloc,'/'.join(paths[:len(paths) - i]).encode('utf-8'))
+    # phish_url = '{}://{}/{}/'.format(parts.scheme, parts.netloc,'/'.join(paths[:len(paths) - i]).encode('utf-8'))
+    phish_url = '{}://{}/{}/'.format(parts.scheme, parts.netloc,'/'.join(paths[:len(paths) - i]))
     
     # guess each path with .zip extension
     go_guessing(phish_url)
@@ -213,6 +214,7 @@ def use_phishtank():
   # go phishing baby!
   for entry in parsed_json:
     url = entry['url'].strip()
+    url = unquote(url)
     go_phishing(url)
 
 def use_local_file(f):
