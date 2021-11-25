@@ -1,5 +1,8 @@
 # phishfinder
 
+## DEPRECATED PROJECT
+This project is now deprecated and has been superceded by https://github.com/cybercdh/kitphishr
+
 ## Overview
 The tool will traverse a URL path to find open directories. If found, it will then look for any zip/txt/exe files and download them. The likelihood is these files will contain the phishing source code, victim logs and possibly malware. You can supply a list of urls in a text file, or by default the code will connect to phishtank and parse the latest known phishing urls. 
 
